@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="opengts_server_communication_methods_values">
+        <item>HTTP</item>
+        <item>HTTPS</item>
+        <item>UDP</item>
+    </string-array>
+
+    <string-array name="preference_values">
+        <item>Twitter</item>
+        <item>Google</item>
+        <item>Instagram</item>
+        <item>Facebook</item>
+    </string-array>
+</resources>

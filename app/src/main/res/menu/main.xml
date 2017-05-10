@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/loc_log"
+        android:orderInCategory="100"
+        android:title="@string/loc_log"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/sms_sent"
+        android:orderInCategory="100"
+        android:title="@string/sms_sent"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/sms_failed"
+        android:orderInCategory="100"
+        android:title="@string/sms_failed"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/reset_log"
+        android:orderInCategory="100"
+        android:title="Reset Log"
+        app:showAsAction="never" />
+
+</menu>

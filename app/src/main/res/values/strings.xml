@@ -1,0 +1,104 @@
+<resources>
+    <string name="app_name">Tracking Steelytoe</string>
+    <string name="title_activity_maps">Tracking Steelytoe</string>
+    <string name="title_activity_main">Tracking Steelytoe</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!--Tree Menu-->
+    <string name="action_settings">Settings</string>
+    <string name="loc_log">Location Log</string>
+    <string name="sms_sent">SMS Sent</string>
+    <string name="sms_failed">SMS Failed</string>
+
+    <!--View Fragment-->
+    <string name="btn_start_logging">Start Race</string>
+    <string name="btn_stop_logging">Stop Race</string>
+    <string name="btn_logout_from_google">Keluar</string>
+    <string name="txt_latitude">Latitude</string>
+    <string name="txt_longitude">Latitude</string>
+    <string name="loading">Loading ...</string>
+
+
+    <!--OpenGTS STRING-->
+    <string name="autosend_enabled">Allow auto sending</string>
+    <string name="autoopengts_server_category">OpenGTS Settings</string>
+    <string name="autoopengts_server">Server</string>
+    <string name="autoopengts_server_summary">Hostname or IP</string>
+    <string name="autoftp_port">Port</string>
+    <string name="opengts_server_communication_method">Communication Method</string>
+    <string name="opengts_server_communication_method_summary">HTTP-based or Raw Socket Based communication</string>
+    <string name="autoopengts_server_path">Server Path</string>
+    <string name="autoopengts_server_path_summary">Optional and only for HTTP-based communication. For example \'/gprmc/Data\'</string>
+    <string name="autoopengts_accountname">Account name</string>
+    <string name="autoopengts_device_id">Device ID</string>
+    <string name="ssl_certificate_validate">Validate SSL Certificate</string>
+
+    <!--Preference-->
+    <string name="list_pref_title">List Preference</string>
+    <string name="list_pref_desc">This is an example of a list preference that automatically uses Material Dialogs to show the list dialog.</string>
+
+    <string name="edittext_pref_title">EditText Preference</string>
+    <string name="edittext_pref_desc">This is an example of an EditText preference that automatically uses Material Dialogs to show the input dialog.</string>
+    <string name="edittext_pref_dialogtitle">Enter a Name</string>
+    <string name="optional_dialog_message">This is an optional dialog message.</string>
+    <string name="edittext_pref_optionalvalue"></string>
+
+
+    <!--Pref_performance-->
+    <string name="listeners_summary">Which location providers to use when they are available; GPS for satellites, Network for cell tower/wifi, Passive is a special provider that listens for locations requested from other applications.</string>
+    <string name="listeners_title">Location providers</string>
+
+    <string name="time_before_logging_title">Logging interval</string>
+    <string name="time_before_logging_summary">Use 0 for maximum frequency, but slower is better for battery life.</string>
+    <string name="time_before_logging_dialog_title">Time in seconds</string>
+    <string name="time_before_logging_hint">Enter seconds (max 9999)</string>
+
+    <string name="device_id_title">Device ID</string>
+    <string name="device_id_summary">Status Device Id</string>
+    <string name="device_id_dialog_title">Device ID</string>
+    <string name="device_id_hint">this code device id</string>
+
+
+    <!--Pref_sms-->
+    <string name="time_before_sms_title">SMS interval</string>
+    <string name="time_before_sms_summary">----</string>
+    <string name="time_before_sms_dialog_title">Time in minutes</string>
+    <string name="time_before_sms_hint">Enter minutes (max 9999)</string>
+
+    <!--Strings-->
+    <string name="time_onesecond">1 second</string>
+    <string name="time_halfminute">&#189; minute</string>
+    <string name="time_oneminute">1 minute</string>
+    <string name="time_onehour">1 hour</string>
+    <string name="time_quarterhour">15 minutes</string>
+    <string name="time_halfhour">&#189; hour</string>
+    <string name="time_oneandhalfhours">1&#189; hours</string>
+    <string name="time_twoandhalfhours">2&#189; hours</string>
+    <string name="time_hms_format" formatted="false">%sh %sm %ss</string>
+    <string name="accuracy_within" formatted="false">within %s %s</string>
+    <string name="degree_symbol" translatable="false">&#176;</string>
+
+    <string name="direction_roughly">Roughly %s</string>
+    <string name="direction_north">North</string>
+    <string name="direction_northnortheast">North by Northeast</string>
+    <string name="direction_northeast">Northeast</string>
+    <string name="direction_eastnortheast">East by Northeast</string>
+    <string name="direction_east">East</string>
+    <string name="direction_eastsoutheast">East by Southeast</string>
+    <string name="direction_southeast">Southeast</string>
+    <string name="direction_southsoutheast">South by Southeast</string>
+    <string name="direction_south">South</string>
+    <string name="direction_southsouthwest">South by Southwest</string>
+    <string name="direction_southwest">Southwest</string>
+    <string name="direction_westsouthwest">West by Southwest</string>
+    <string name="direction_west">West</string>
+    <string name="direction_westnorthwest">West by Northwest</string>
+    <string name="direction_northwest">Northwest</string>
+    <string name="direction_northnorthwest">North by Northwest</string>
+
+    <string name="unknown_direction">unknown</string>
+    <string name="title_activity_main_sms_and_scan_code">MainSmsAndScanCodeActivity</string>
+
+</resources>

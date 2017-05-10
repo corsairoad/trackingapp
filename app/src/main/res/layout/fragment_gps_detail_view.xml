@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <!--<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="200dp"
+        android:layout_marginLeft="180dp">
+
+        <Button
+            android:id="@+id/btnStart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start Race"/>
+
+        <Button
+            android:id="@+id/btnViewTrack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View Track"/>
+
+    </LinearLayout>-->
+
+    <com.dd.processbutton.iml.ActionProcessButton
+        android:id="@+id/btnActionProcess"
+        android:layout_width="wrap_content"
+        android:width="240dp"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        custom:pb_colorPressed="@color/blue_pressed"
+        custom:pb_colorProgress="@color/accentColorComplementary"
+        custom:pb_textProgress="@string/btn_stop_logging"
+        custom:pb_textError="Error"
+        android:text="@string/btn_start_logging"
+        custom:pb_colorError="@color/red_error"
+        android:layout_marginTop="72dp"
+        android:layout_marginRight="29dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <com.dd.processbutton.iml.ActionProcessButton
+        android:id="@+id/btnActionView"
+        android:layout_width="wrap_content"
+        android:width="240dp"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        custom:pb_colorNormal="@color/accentColorComplementary"
+        custom:pb_colorPressed="@color/blue_pressed"
+        custom:pb_colorProgress="@color/accentColorComplementary"
+        custom:pb_textProgress="@string/btn_stop_logging"
+        custom:pb_textError="Error"
+        android:text="View Track"
+        custom:pb_colorError="@color/red_error"
+        android:layout_marginTop="18dp"
+        android:layout_marginRight="29dp"
+        android:layout_below="@+id/btnActionProcess"
+        android:layout_alignStart="@+id/btnActionProcess" />
+
+</RelativeLayout>

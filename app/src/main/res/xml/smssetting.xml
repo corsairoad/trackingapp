@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="SMS SETTINGS">
+
+        <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
+            android:key="time_before_sms"
+            android:title="@string/time_before_sms_title"
+            android:summary="@string/time_before_sms_summary"
+            android:dialogTitle="@string/time_before_sms_dialog_title"
+            android:numeric="integer"
+            android:maxLength="4"
+            android:hint="@string/time_before_sms_hint"
+            android:defaultValue="5"/>
+
+        <com.afollestad.materialdialogs.prefs.MaterialEditTextPreference
+            android:key="sms_server_number"
+            android:title="Phone Number"
+            android:inputType="phone"
+            android:summary="0857xxxxxxxx"
+            android:dialogTitle="Phone Number"/>
+        <!--<Preference-->
+            <!--android:key="opengts_validatecustomsslcert"-->
+            <!--android:title="@string/ssl_certificate_validate" />-->
+    </PreferenceCategory>
+</PreferenceScreen>

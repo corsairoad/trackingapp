@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="tamborachallenge.steelytoe.com">
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.GET_ACCOUNT" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+
+    <uses-feature android:name="android.hardware.location.gps" />
+
+    <uses-permission
+        android:name="android.permission.ACCESS_MOCK_LOCATION"
+        tools:ignore="MockLocation" />
+    <uses-permission android:name="android.permission.WRITE_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".ui.activity.permission.PermissionGpsActivity"
+            android:configChanges="orientation"
+            android:label="@string/title_activity_maps"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation"
+            android:label="@string/title_activity_maps"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
+        <service android:name=".common.events.ServiceBackground" />
+        <service android:name=".common.events.ServiceSendSms" />
+        <service android:name=".common.events.ServiceSmsFailed" />
+        <!-- <receiver android:name=".senders.sms.AlarmSmsReceiver" /> -->
+
+        <activity
+            android:name=".ui.MapsActivity"
+            android:configChanges="orientation"
+            android:label="@string/title_activity_main"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <activity
+            android:name=".ui.activity.SmsActivity"
+            android:configChanges="orientation"
+            android:label="SMS"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+
+        <activity
+            android:name=".ui.fragments.settings.PerformanceSettingsFragment"
+            android:configChanges="orientation"
+            android:label="Performance"
+            android:screenOrientation="portrait" />
+
+
+        <activity
+            android:name=".ui.activity.FileGpxActivity"
+            android:configChanges="orientation"
+            android:label="File GPX"
+            android:screenOrientation="portrait" />
+
+
+        <activity
+            android:name=".ui.activity.SettingActivity"
+            android:configChanges="orientation"
+            android:label="Setting"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.fragments.settings.OpenGTSFragment"
+            android:configChanges="orientation"
+            android:label="Setting OpenGTS"
+            android:screenOrientation="portrait" />
+
+
+        <activity
+            android:name=".ui.fragments.settings.SmsFragment"
+            android:configChanges="orientation"
+            android:label="Setting SMS"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activity.permission.PermissionSmsActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activity.permission.PermissionCameraActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name="info.vividcode.android.zxing.CaptureActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:windowSoftInputMode="stateAlwaysHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.zxing.client.android.SCAN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.activity.list.ListViewSmsSent"
+            android:configChanges="orientation"
+            android:label="Setting OpenGTS"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activity.list.ListViewLoc"
+            android:configChanges="orientation"
+            android:label="Setting OpenGTS"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activity.list.ListViewSmsFailed"
+            android:configChanges="orientation"
+            android:label="Setting OpenGTS"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activity.ViewTrackActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+        <!-- <activity android:name=".ui.activity.DownloadRuteActivity"></activity> -->
+        <!-- <activity android:name=".ui.activity.permission.PermissionCameraActivity"></activity> -->
+        <activity android:name=".ui.activity.permission.InisialisasiActivity"></activity>
+    </application>
+
+</manifest>
