@@ -1,6 +1,8 @@
 package tamborachallenge.steelytoe.com.ui.fragments.display;
 
 import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -10,6 +12,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +23,7 @@ import android.widget.Toast;
 import com.dd.processbutton.iml.ActionProcessButton;
 import tamborachallenge.steelytoe.com.R;
 import tamborachallenge.steelytoe.com.common.NetworkUtil;
+import tamborachallenge.steelytoe.com.common.events.RunningLocationService;
 import tamborachallenge.steelytoe.com.common.events.ServiceBackground;
 import tamborachallenge.steelytoe.com.common.events.ServiceSendSms;
 import tamborachallenge.steelytoe.com.common.events.ServiceSmsFailed;
@@ -47,7 +51,9 @@ public class GpsDetailViewFragment extends Fragment {
         btnActionProcess.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadService();
+                //loadService();
+                startRunningService();
+                createNotification();
             }
         });
 
@@ -81,6 +87,22 @@ public class GpsDetailViewFragment extends Fragment {
     @Override
     public void onPause()    {
         super.onPause();
+    }
+
+    private void startRunningService() {
+        Intent intent = new Intent(getContext(), RunningLocationService.class);
+        getActivity().startService(intent);
+    }
+
+    private void createNotification() {
+        NotificationManager notif = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+
+        NotificationCompat.Builder builder =  new NotificationCompat.Builder(getContext())
+                .setContentTitle("Aplikasi Lari")
+                .setContentText("Service running")
+                .setSmallIcon(R.mipmap.ic_launcher);
+
+        notif.notify(0, builder.build());
     }
 
     // =====================================================================

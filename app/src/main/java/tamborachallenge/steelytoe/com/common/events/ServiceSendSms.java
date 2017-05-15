@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.text.format.Time;
 import android.util.Log;
 import android.widget.Toast;
@@ -75,10 +76,11 @@ public class ServiceSendSms extends Service {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         numberDestination = sharedPreferences.getString("sms_server_number", null); // getting String
-        if (numberDestination == null || numberDestination == "") {
-            editor.putString("sms_server_number", "082211122203");
-            editor.commit();
+        if (TextUtils.isEmpty(numberDestination)) {
             numberDestination = "082211122203";
+            editor.putString("sms_server_number", numberDestination);
+            editor.commit();
+
         }
     }
 

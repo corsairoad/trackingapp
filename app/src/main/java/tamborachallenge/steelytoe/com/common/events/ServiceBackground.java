@@ -73,7 +73,7 @@ public class ServiceBackground extends Service  {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         String intervalString =  sharedPreferences.getString("time_before_logging", null); // getting String
         long interval;
-        if(intervalString == null || TextUtils.isEmpty(intervalString)){
+        if(TextUtils.isEmpty(intervalString)){
             editor.putString("time_before_logging", "15");
             editor.commit();
             interval = 15 * 1000;
