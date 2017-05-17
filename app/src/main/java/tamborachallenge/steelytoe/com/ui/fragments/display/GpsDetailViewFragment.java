@@ -51,9 +51,8 @@ public class GpsDetailViewFragment extends Fragment {
         btnActionProcess.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //loadService();
-                startRunningService();
-                createNotification();
+                loadService();
+                //startRunningService();
             }
         });
 

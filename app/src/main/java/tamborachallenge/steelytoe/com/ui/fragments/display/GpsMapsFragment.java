@@ -307,6 +307,7 @@ public class GpsMapsFragment extends Fragment implements OnMapReadyCallback {
             return;
         }
         mMap.setMyLocationEnabled(true);
+        new loadJSONFromAsset().execute();
 
     }
     // ===========On MAPREADY END

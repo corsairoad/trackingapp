@@ -1,51 +1,59 @@
 package tamborachallenge.steelytoe.com.common.events;
 
 import android.Manifest;
-import android.app.IntentService;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import tamborachallenge.steelytoe.com.MainActivity;
 import tamborachallenge.steelytoe.com.R;
 
 /**
  * Created by fadlymunandar on 5/15/17.
  */
 
-public class RunningLocationService extends IntentService implements GoogleApiClient.ConnectionCallbacks,
+public class RunningLocationService extends Service implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private static final String SERVICE_NAME = RunningLocationService.class.getSimpleName();
+    private static final int ONGOING_NOTIFICATION_ID = 4;
 
     private GoogleApiClient mGoogleApiClient;
     private Location mLocation;
     private LocationRequest mLocationRequest;
 
     public RunningLocationService() {
-        super(SERVICE_NAME);
+
     }
 
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         Log.d("Location update", "Onstart Command called");
-        return super.onStartCommand(intent, flags, startId);
+        //return super.onStartCommand(intent, flags, startId);
+        mGoogleApiClient.connect();
+        return Service.START_STICKY;
 
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     @Override
@@ -56,19 +64,6 @@ public class RunningLocationService extends IntentService implements GoogleApiCl
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-    }
-
-    // Google Api Client methods
-    @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-
-    }
-
-    @Override
-    public void onStart(@Nullable Intent intent, int startId) {
-        mGoogleApiClient.connect();
-        super.onStart(intent, startId);
-
     }
 
     @Override
@@ -129,12 +124,20 @@ public class RunningLocationService extends IntentService implements GoogleApiCl
 
         NotificationManager notifManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
 
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,2, intent, 0);
+
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setContentTitle("Aplikasi Lari")
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Lat: " + lat + " Lng " + lng);
+                .setContentText("Lat: " + lat + " Lng " + lng)
+                //.addAction(R.mipmap.ic_launcher, "Open", pendingIntent)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
 
-        notifManager.notify(0,mBuilder.build());
+
+        //notifManager.notify(0,mBuilder.build());
+        startForeground(ONGOING_NOTIFICATION_ID, mBuilder.build());
     }
 
     // end

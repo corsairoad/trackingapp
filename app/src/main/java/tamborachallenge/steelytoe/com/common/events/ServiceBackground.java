@@ -12,14 +12,25 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.text.format.Time;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
+import tamborachallenge.steelytoe.com.R;
 import tamborachallenge.steelytoe.com.common.Maths;
 import tamborachallenge.steelytoe.com.common.Strings;
 import tamborachallenge.steelytoe.com.model.TempLoaction;
@@ -30,7 +41,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
 
-public class ServiceBackground extends Service  {
+public class ServiceBackground extends Service implements GoogleApiClient.OnConnectionFailedListener,
+        GoogleApiClient.ConnectionCallbacks, com.google.android.gms.location.LocationListener {
 
 //// ***************************************************************************************************************/
 //// ****************************************** LOGIKA PENCARIAN TITIK LOCATION 1 **********************************/
@@ -49,6 +61,26 @@ public class ServiceBackground extends Service  {
     Context context;
     Intent intent;
 
+    //-- start
+
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
+    private Location mCurrentLocation;
+    private long mInterval;
+    private static final int NOTIFICATION_ONGOING_ID = 32;
+
+    private int timerInterval = 1000; //in millis
+    private Handler timerHandler;
+    private Runnable timerRunnable;
+
+    private int minute = 58 ;
+    private int second = 50;
+    private int hour = 0;
+    private String timerString;
+
+
+    // -- end
+
     private boolean addNewTrackSegment;
     String dateTimeString;
 
@@ -58,6 +90,33 @@ public class ServiceBackground extends Service  {
         super.onCreate();
         intent = new Intent(BROADCAST_ACTION);
         context=this;
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addOnConnectionFailedListener(this)
+                .addConnectionCallbacks(this)
+                .addApi(LocationServices.API)
+                .build();
+
+        timerHandler = new Handler();
+        timerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (second == 59) {
+                    second = 0;
+                    minute +=1;
+                }else {
+                    second+=1;
+                }
+
+                if (minute  == 60 ) {
+                    minute = 0;
+                    hour+=1;
+                }
+                timerString = String.format("%02d:%02d:%02d", hour, minute, second);
+                updateTimerNotification(timerString);
+                timerHandler.postDelayed(this, timerInterval);
+            }
+        };
         // Retrieve a PendingIntent that will perform a broadcast
 //        Intent alarmIntent = new Intent(this, ServiceSendSms.class);
 //        pendingIntent = PendingIntent.getBroadcast(this, 88, alarmIntent, 0);
@@ -66,9 +125,20 @@ public class ServiceBackground extends Service  {
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        mInterval = getInterval();
+        //mInterval = 1000 * 60 * 2;
+        if(mGoogleApiClient != null && !mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+        }
+
+        timerHandler.postDelayed(timerRunnable, timerInterval);
+        return START_STICKY;
+    }
+
+    /*
+    @Override
     public void onStart(Intent intent, int startId) {
-
-
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         String intervalString =  sharedPreferences.getString("time_before_logging", null); // getting String
@@ -94,7 +164,118 @@ public class ServiceBackground extends Service  {
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, interval, 0,listener);
 
     }
+    */
 
+    // Google API Client methods
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        createLocationRequest();
+        startLocationRequest();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    private void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setFastestInterval(mInterval / 2);
+        mLocationRequest.setInterval(mInterval);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    private void startLocationRequest() {
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest, this);
+    }
+
+    // location update listener
+    @Override
+    public void onLocationChanged(Location location) {
+        this.mCurrentLocation = location;
+        setBestLocation(location);
+        //updateNotification(location);
+    }
+
+    private void updateTimerNotification(String timerString) {
+        NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(this)
+                .setContentTitle("Durasi")
+                .setContentText(timerString)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setAutoCancel(true);
+
+        startForeground(NOTIFICATION_ONGOING_ID, notifBuilder.build());
+        Log.d("Location update", timerString);
+    }
+
+    private void updateNotification(Location location){
+        if (location == null){
+            return;
+        }
+        String provider = location.getProvider();
+        String lat = String.valueOf(location.getLatitude());
+        String lng = String.valueOf(location.getLongitude());
+        String contentText = String.format("Lat: %s Lng: %s\nProvider: %s", lat, lng, provider);
+
+        NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(this)
+                .setContentTitle("Aplikasi Lari")
+                .setContentText(contentText)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setAutoCancel(true);
+
+        startForeground(NOTIFICATION_ONGOING_ID, notifBuilder.build());
+        Log.d("Location update", contentText);
+    }
+
+    private long getInterval(){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        String intervalString =  sharedPreferences.getString("time_before_logging", null); // getting String
+        long interval;
+
+        if(TextUtils.isEmpty(intervalString)){
+            editor.putString("time_before_logging", "15");
+            editor.apply();
+            interval = 15 * 1000;
+        }else{
+            interval = Long.parseLong(intervalString) * 1000;
+        }
+
+        Log.d(TAG, "Interval " + interval);
+        return interval;
+    }
+
+    private void setBestLocation(Location loc){
+        if (loc == null) {
+            return;
+        }
+
+        if(isBetterLocation(loc, previousBestLocation)) {
+            Log.d("__A"," " + loc);
+            Log.d("__B"," " + previousBestLocation);
+
+            intent.putExtra("Latitude", loc.getLatitude());
+            intent.putExtra("Longitude", loc.getLongitude());
+            intent.putExtra("Provider", loc.getProvider());
+            sendBroadcast(intent);
+
+            Time now = new Time();
+            now.setToNow();
+            String timeOfEvent = now.format("%H:%M:%S");
+
+            insertToSQLiteDatabase(loc, timeOfEvent);
+            insertToGpxFile(loc, timeOfEvent);
+            writeToFile(loc);
+        }
+
+        previousBestLocation = loc;
+    }
 
     public class MyLocationListener implements LocationListener {
 
@@ -212,7 +393,8 @@ public class ServiceBackground extends Service  {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        locationManager.removeUpdates(listener);
+        mGoogleApiClient.disconnect();
+        //-- -locationManager.removeUpdates(listener);
 
 //        cancelAlarm();
         super.onDestroy();
