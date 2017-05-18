@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -26,6 +27,9 @@ import tamborachallenge.steelytoe.com.common.Impl.CrudTempLocationImpl;
 import tamborachallenge.steelytoe.com.common.events.ServiceSendSms;
 import tamborachallenge.steelytoe.com.common.events.ServiceSmsFailed;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -70,6 +74,11 @@ public class GpsMapsFragment extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_maps, container, false);
@@ -78,7 +87,6 @@ public class GpsMapsFragment extends Fragment implements OnMapReadyCallback {
         mapFragment.getMapAsync(this);
 
         btnCal = (Button) rootView.findViewById(R.id.btnCal);
-        /*btnReset = (Button) rootView.findViewById(R.id.btnReset);*/
         btnProses = (Button) rootView.findViewById(R.id.btnProses);
 
         btnCal.setOnClickListener(new View.OnClickListener() {

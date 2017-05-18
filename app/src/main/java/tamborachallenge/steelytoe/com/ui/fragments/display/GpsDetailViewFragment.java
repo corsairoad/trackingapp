@@ -9,8 +9,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
@@ -21,6 +24,11 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.dd.processbutton.iml.ActionProcessButton;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.LocationServices;
+
 import tamborachallenge.steelytoe.com.R;
 import tamborachallenge.steelytoe.com.common.NetworkUtil;
 import tamborachallenge.steelytoe.com.common.events.RunningLocationService;
@@ -35,9 +43,15 @@ public class GpsDetailViewFragment extends Fragment {
     private ActionProcessButton btnActionProcess , btnActionView;
     private PendingIntent pendingIntentLocation, pendingIntentSms;
     private AlarmManager managerLocation, managerSms;
+    private GoogleApiClient mGoogleApiClient;
 
     public static GpsDetailViewFragment newInstance(){
         return new GpsDetailViewFragment();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -52,7 +66,7 @@ public class GpsDetailViewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 loadService();
-                //startRunningService();
+                //mGoogleApiClient.connect();
             }
         });
 
@@ -88,11 +102,6 @@ public class GpsDetailViewFragment extends Fragment {
         super.onPause();
     }
 
-    private void startRunningService() {
-        Intent intent = new Intent(getContext(), RunningLocationService.class);
-        getActivity().startService(intent);
-    }
-
     private void createNotification() {
         NotificationManager notif = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -117,18 +126,12 @@ public class GpsDetailViewFragment extends Fragment {
                 editor.commit();
                 setActionButtonStart__();
 
-//                cancelAlarmServiceBackground();
-//                Toast.makeText( getActivity(), "1", Toast.LENGTH_SHORT).show();
-
-
                 Intent service = new Intent(getActivity(), ServiceBackground.class);
                 getActivity().stopService(service);
 
                 Intent serviceSmsSend = new Intent(getActivity(), ServiceSendSms.class);
                 getActivity().stopService(serviceSmsSend);
-//
-//                Intent serviceSmsFailed = new Intent(getActivity(), ServiceSmsFailed.class);
-//                getActivity().stopService(serviceSmsFailed);
+
 
             } else if (checkSession() == 0) {
                 // Proses Start
@@ -136,10 +139,7 @@ public class GpsDetailViewFragment extends Fragment {
                 editor.commit();
                 setActionButtonStop__();
 
-//                startAlarmServiceBackground();
-//                startAlarmSendSms();
 
-//                Toast.makeText( getActivity(), "0", Toast.LENGTH_SHORT).show();
 
 
                 Intent service = new Intent(getActivity(), ServiceBackground.class);
@@ -148,8 +148,6 @@ public class GpsDetailViewFragment extends Fragment {
                 Intent serviceSmsSend = new Intent(getActivity(), ServiceSendSms.class);
                 getActivity().startService(serviceSmsSend);
 
-//                Intent serviceSmsFailed = new Intent(getActivity(), ServiceSmsFailed.class);
-//                getActivity().startService(serviceSmsFailed);
             }
         }
     }
@@ -157,14 +155,12 @@ public class GpsDetailViewFragment extends Fragment {
     // Button
     private void setActionButtonStart__(){
         btnActionProcess.setText(R.string.btn_start_logging);
-//        actionButton.setBackgroundColor( ContextCompat.getColor(getActivity(), R.color.accentColor));
         btnActionProcess.setAlpha(0.8f);
         btnActionProcess.setProgress(0);
     }
 
     private void setActionButtonStop__(){
         btnActionProcess.setText(R.string.btn_stop_logging);
-//        actionButton.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.accentColorComplementary));
         btnActionProcess.setAlpha(0.8f);
         btnActionProcess.setProgress(50);
     }
@@ -215,48 +211,11 @@ public class GpsDetailViewFragment extends Fragment {
         managerLocation.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntentLocation);
     }
 
-    public void cancelAlarmServiceBackground() {
-//        if (managerLocation != null ) { // && managerSms != null
-
-            managerLocation.cancel(pendingIntentLocation);
-
-            Intent service = new Intent(getActivity(), ServiceBackground.class);
-            getActivity().stopService(service);
-
-//            managerSms.cancel(pendingIntentSms);
-//            Intent serviceSms = new Intent(getActivity(), ServiceSendSms.class);
-//            getActivity().stopService(serviceSms);
-
-            Toast.makeText(getActivity(), "Get Locataion Stop", Toast.LENGTH_SHORT).show();
-//        }
-    }
-    //======= Alarm Get Locataion END
 
 
-    //======= Alarm Send Sms
-//    public void startAlarmSendSms() {
-//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        SharedPreferences.Editor editor = sharedPreferences.edit();
-//        String intervalString =  sharedPreferences.getString("time_before_sms", null); // getting String
-//        int interval;
-//        if(intervalString == null || intervalString == ""){
-//            editor.putString("time_before_sms", "5");
-//            editor.commit();
-//            interval = 5 * 60 * 1000;
-//        }else{
-//            interval = Integer.parseInt(intervalString) * 60 * 1000;
-//        }
-//
-//        Toast.makeText(getActivity(), "Send Sms Start", Toast.LENGTH_SHORT).show();
-//
-//        Intent alarmIntentSms = new Intent(getActivity().getApplicationContext(), ServiceSendSms.class);
-//        pendingIntentSms = PendingIntent.getService(getActivity(), 98, alarmIntentSms, 0);
-//        managerSms = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-//
-//        managerSms.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntentSms);
-//    }
 
-    //======= Alarm Send Sms END
+
+
 
 
 
