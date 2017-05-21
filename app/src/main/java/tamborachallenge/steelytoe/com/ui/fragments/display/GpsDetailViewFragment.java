@@ -4,9 +4,11 @@ import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -21,6 +23,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dd.processbutton.iml.ActionProcessButton;
@@ -36,6 +39,7 @@ import tamborachallenge.steelytoe.com.common.events.ServiceBackground;
 import tamborachallenge.steelytoe.com.common.events.ServiceSendSms;
 import tamborachallenge.steelytoe.com.common.events.ServiceSmsFailed;
 import tamborachallenge.steelytoe.com.ui.activity.ViewTrackActivity;
+import tamborachallenge.steelytoe.com.util.PrefManager;
 
 
 public class GpsDetailViewFragment extends Fragment {
@@ -45,6 +49,15 @@ public class GpsDetailViewFragment extends Fragment {
     private AlarmManager managerLocation, managerSms;
     private GoogleApiClient mGoogleApiClient;
 
+    private PrefManager prefManager;
+    private int hour;
+    private int minute;
+    private int second;
+    private String timerString;
+    private BroadcastReceiver timerReceiver;
+    private TextView textTimer;
+
+
     public static GpsDetailViewFragment newInstance(){
         return new GpsDetailViewFragment();
     }
@@ -52,6 +65,33 @@ public class GpsDetailViewFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        prefManager = PrefManager.getInstance(getContext());
+        createAndRegisterReceiver();
+    }
+
+    private void initTimer() {
+        hour = prefManager.getHour();
+        minute = prefManager.getMinute();
+        second = prefManager.getSecond();
+
+        timerString = String.format("%2d:%02d:%02d", hour, minute, second);
+        textTimer.setText(timerString);
+    }
+
+    private void createAndRegisterReceiver(){
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ServiceBackground.ACTION_TIMER_RECIVER);
+
+        timerReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (ServiceBackground.ACTION_TIMER_RECIVER.equals(intent.getAction())){
+                    initTimer();
+                }
+            }
+        };
+
+        getActivity().registerReceiver(timerReceiver, filter);
     }
 
     @Override
@@ -61,7 +101,8 @@ public class GpsDetailViewFragment extends Fragment {
 
         btnActionProcess = (ActionProcessButton) rootView.findViewById(R.id.btnActionProcess);
         btnActionView = (ActionProcessButton) rootView.findViewById(R.id.btnActionView);
-
+        textTimer = (TextView) rootView.findViewById(R.id.text_timer);
+        textTimer.setText(timerString);
         btnActionProcess.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -77,14 +118,13 @@ public class GpsDetailViewFragment extends Fragment {
             }
         });
 
-
-
         return rootView;
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        initTimer();
     }
 
     @Override
@@ -129,8 +169,8 @@ public class GpsDetailViewFragment extends Fragment {
                 Intent service = new Intent(getActivity(), ServiceBackground.class);
                 getActivity().stopService(service);
 
-                Intent serviceSmsSend = new Intent(getActivity(), ServiceSendSms.class);
-                getActivity().stopService(serviceSmsSend);
+                //Intent serviceSmsSend = new Intent(getActivity(), ServiceSendSms.class);
+                //getActivity().stopService(serviceSmsSend);
 
 
             } else if (checkSession() == 0) {
@@ -139,14 +179,11 @@ public class GpsDetailViewFragment extends Fragment {
                 editor.commit();
                 setActionButtonStop__();
 
-
-
-
                 Intent service = new Intent(getActivity(), ServiceBackground.class);
                 getActivity().startService(service);
 
-                Intent serviceSmsSend = new Intent(getActivity(), ServiceSendSms.class);
-                getActivity().startService(serviceSmsSend);
+                //Intent serviceSmsSend = new Intent(getActivity(), ServiceSendSms.class);
+                //getActivity().startService(serviceSmsSend);
 
             }
         }

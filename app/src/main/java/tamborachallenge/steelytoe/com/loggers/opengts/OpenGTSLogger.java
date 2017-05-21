@@ -22,7 +22,7 @@ public class OpenGTSLogger implements FileLogger {
     @Override
     public void write(Location loc) throws Exception {
         OpenGTSManager manager = new OpenGTSManager(context);
-        manager.sendLocations(new SerializableLocation[]{new SerializableLocation(loc)});
+        manager.sendLocations(new SerializableLocation[]{new SerializableLocation(loc)}, context.getApplicationContext());
     }
 
 

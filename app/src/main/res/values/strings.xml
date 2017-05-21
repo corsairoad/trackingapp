@@ -101,4 +101,6 @@
     <string name="unknown_direction">unknown</string>
     <string name="title_activity_main_sms_and_scan_code">MainSmsAndScanCodeActivity</string>
 
+    <string name="duration_text">Duration</string>
+
 </resources>

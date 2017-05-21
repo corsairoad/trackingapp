@@ -2,7 +2,9 @@ package tamborachallenge.steelytoe.com.senders.opengts;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Log;
 import java.io.IOException;
@@ -24,6 +26,7 @@ import java.util.TimeZone;
 
 import tamborachallenge.steelytoe.com.common.Maths;
 import tamborachallenge.steelytoe.com.common.SerializableLocation;
+import tamborachallenge.steelytoe.com.common.events.ServiceSendSms;
 import tamborachallenge.steelytoe.com.model.TempSmsLoc;
 import tamborachallenge.steelytoe.com.sqllite.DBHelper;
 
@@ -39,7 +42,7 @@ public class OpenGTSManager{
     Context context;
 
 
-    public void sendLocations(SerializableLocation[] locations){
+    public void sendLocations(SerializableLocation[] locations, Context context){
         if (locations.length > 0) {
 
             /*String server__ = PreferenceHelper.getOpenGTSServer();
@@ -60,7 +63,7 @@ public class OpenGTSManager{
 ////            String deviceId =  sharedPreferences.getString("opengts_device_id", null);
 ////            String accountName =  sharedPreferences.getString("opengts_accountname", null);
 
-
+            this.context = context;
             String server = "www.steelytoe.com";
             int port = 443;
             String path = "api/data/marker/receive";
@@ -79,44 +82,41 @@ public class OpenGTSManager{
     void sendByHttp(String deviceId, String accountName, SerializableLocation[] locations, String communication, String path, String server, int port) {
         for(SerializableLocation loc:locations){
             String finalUrl = getUrl(deviceId, accountName, loc, communication, path, server, port );
+            saveSmsData(loc);
             new OpenGTSManager.DownloadTask().execute(finalUrl);
             Log.d(TAG, "final URL " + finalUrl);
 
-            /*double time = loc.getTime();*/
-            double perseribu = loc.getTime() / 1000;
-            DecimalFormat df = new DecimalFormat("#");
+        }
+    }
+
+    private void saveSmsData(SerializableLocation loc) {
+                    /*double time = loc.getTime();*/
+        double perseribu = loc.getTime() / 1000;
+        DecimalFormat df = new DecimalFormat("#");
             /*int seconds = (int) (time / 1000) % 60 ;
             int minutes = (int) ((time / (1000*60)) % 60);
             int hours   = (int) ((time / (1000*60*60)) % 24);*/
 
             /*=============PROSES SEND SMS*/
-            DecimalFormat latlng = new DecimalFormat("#.######");
-            DecimalFormat accu = new DecimalFormat("#.##");
-            String contentSms = String.valueOf(df.format(perseribu))+"$"
-                    + String.valueOf(latlng.format(loc.getLatitude()))+"$"
-                    + String.valueOf(latlng.format(loc.getLongitude()))+"$"
-                    + String.valueOf(accu.format(loc.getAccuracy()))+"$"
-                    + String.valueOf(accu.format(loc.getAltitude()))+"$"
-                    + String.valueOf(accu.format(loc.getSpeed()))+";";
+        DecimalFormat latlng = new DecimalFormat("#.######");
+        DecimalFormat accu = new DecimalFormat("#.##");
+        String contentSms = String.valueOf(df.format(perseribu))+"$"
+                + String.valueOf(latlng.format(loc.getLatitude()))+"$"
+                + String.valueOf(latlng.format(loc.getLongitude()))+"$"
+                + String.valueOf(accu.format(loc.getAccuracy()))+"$"
+                + String.valueOf(accu.format(loc.getAltitude()))+"$"
+                + String.valueOf(accu.format(loc.getSpeed()))+";";
 
 
-            tempSmsLoc.sms = contentSms;
-            int stsInsert = insert(tempSmsLoc);
-            Log.d(TAG, "Insert Data SMS " + stsInsert);
-
-            /*Log.d(TAG, "loc.getTime() " + loc.getTime());
-            Log.d(TAG, "seconds " + seconds);
-            Log.d(TAG, "minutes " + minutes);
-            Log.d(TAG, "hours " + hours);
-            Log.d(TAG, "df " + df.format(perseribu));
-
-            long checkGprcm = 1490118733 * 1000;
-            Log.d(TAG, "getNmeaGprmcTime " + getNmeaGprmcTime(new Date(checkGprcm)));*/
-            /*=============PROSES SEND SMS ========== END*/
-
-        }
+        tempSmsLoc.sms = contentSms;
+        int stsInsert = insert(tempSmsLoc);
+        Log.d(TAG, "Insert Data SMS " + stsInsert);
     }
 
+    private void startSendSmsService() {
+        Intent intent = new Intent(context, ServiceSendSms.class);
+        context.startService(intent);
+    }
 
     public static String gprmcEncode(SerializableLocation loc) {
         DecimalFormatSymbols dfs = new DecimalFormatSymbols(Locale.US);
@@ -266,6 +266,7 @@ public class OpenGTSManager{
             if(tes == 200){
                 Log.d(TAG, "Sukses " + result);
             } else {
+                startSendSmsService();
                 Log.d(TAG, "Gagal " + result);
             }
         }

@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.IntDef;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -87,16 +88,25 @@ public class ServiceSendSms extends Service {
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
-        timerHandler.postDelayed(timerRunnable, 0);
-        timerHandler.postDelayed(timerRunnableFailed, 0);
+        //timerHandler.postDelayed(timerRunnable, 0);
+        //timerHandler.postDelayed(timerRunnableFailed, 0);
 
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Time now = new Time();
+        now.setToNow();
+        timeOfEvent = now.format("%H:%M:%S");
+        sendSms();
+        return START_NOT_STICKY;
+    }
+
+    @Override
     public void onDestroy() {
-        timerHandler.removeCallbacks(timerRunnable);
-        timerHandler.removeCallbacks(timerRunnableFailed);
-        unregisterReceiver(mBatInfoReceiver);
+        //timerHandler.removeCallbacks(timerRunnable);
+        //timerHandler.removeCallbacks(timerRunnableFailed);
+        //unregisterReceiver(mBatInfoReceiver);
         super.onDestroy();
     }
 
@@ -129,11 +139,13 @@ public class ServiceSendSms extends Service {
 
 
     private void sendSms() {
+        Log.d(ServiceSendSms.class.getSimpleName(), "send sms service called");
         rowCont = crudSmsLoc.getRowCount();
         if (rowCont != null) {
             if (isSimExists()) {
                 try {
                     smsMgr.sendTextMessage(numberDestination, null, rowCont, sentPI, null);
+                    sts_delivery = "SMS SENT";
                 } catch (Exception e) {
                     sts_delivery = "Failed to send SMS";
                     insertToSQLiteDatabase_SmsFailed(timeOfEvent, rowCont, sts_delivery);

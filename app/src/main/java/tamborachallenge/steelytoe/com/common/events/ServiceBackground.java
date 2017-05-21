@@ -35,12 +35,14 @@ import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import tamborachallenge.steelytoe.com.MainActivity;
 import tamborachallenge.steelytoe.com.R;
 import tamborachallenge.steelytoe.com.common.Maths;
 import tamborachallenge.steelytoe.com.common.Strings;
 import tamborachallenge.steelytoe.com.model.TempLoaction;
 import tamborachallenge.steelytoe.com.common.Impl.CrudTempLocationImpl;
 import tamborachallenge.steelytoe.com.loggers.FileLoggerFactory;
+import tamborachallenge.steelytoe.com.util.PrefManager;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -79,6 +81,7 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
     private Location mCurrentLocation;
     private long mInterval;
     private static final int NOTIFICATION_ONGOING_ID = 32;
+    public static final int REQUEST_CODE_MAIN = 76;
 
     private int timerInterval = 1000; //in millis
     private Handler timerHandler;
@@ -89,6 +92,7 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
     private int hour = 0;
     private String timerString;
 
+    public static final String ACTION_TIMER_RECIVER = "timer.receiver";
 
     // -- end
 
@@ -125,16 +129,26 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
                     minute = 0;
                     hour+=1;
                 }
+
                 timerString = String.format("%02d:%02d:%02d", hour, minute, second);
+                updateTimerReceiver(hour, minute, second);
                 updateTimerNotification(timerString);
                 timerHandler.postDelayed(this, timerInterval);
             }
         };
-        // Retrieve a PendingIntent that will perform a broadcast
-//        Intent alarmIntent = new Intent(this, ServiceSendSms.class);
-//        pendingIntent = PendingIntent.getBroadcast(this, 88, alarmIntent, 0);
-//        startAlarm();
 
+
+    }
+
+    private void updateTimerReceiver(int hour, int minute, int second) {
+        PrefManager prefManager = PrefManager.getInstance(this);
+        prefManager.saveHour(hour);
+        prefManager.saveMinute(minute);
+        prefManager.saveSecond(second);
+
+        Intent intent = new Intent();
+        intent.setAction(ACTION_TIMER_RECIVER);
+        sendBroadcast(intent);
     }
 
     @Override
@@ -221,11 +235,14 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
     }
 
     private void updateTimerNotification(String timerString) {
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE_MAIN, intent, 0);
         NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(this)
                 .setContentTitle("Durasi")
                 .setContentText(timerString)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .addAction(0, "OPEN", pendingIntent);
 
         startForeground(NOTIFICATION_ONGOING_ID, notifBuilder.build());
         Log.d("Location update", timerString);
@@ -360,7 +377,7 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
         // Check whether the new location fix is more or less accurate
         int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
         boolean isLessAccurate = accuracyDelta > 0;
-        boolean isMoreAccurate = accuracyDelta < 0;
+        boolean isMoreAccurate = accuracyDelta < 50;
         boolean isSignificantlyLessAccurate = accuracyDelta > 200;
 
         // Check if the old and new location are from the same provider
@@ -443,6 +460,8 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+
+        PrefManager.getInstance(this).resetTime();
         timerHandler.removeCallbacks(timerRunnable);
         mGoogleApiClient.disconnect();
         //-- -locationManager.removeUpdates(listener);
