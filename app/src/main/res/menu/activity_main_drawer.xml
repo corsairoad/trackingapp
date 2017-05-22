@@ -26,6 +26,7 @@
             <item
                 android:id="@+id/nav_send"
                 android:icon="@drawable/ic_menu_send"
+                android:visible="false"
                 android:title="SMS" />
             <item
                 android:id="@+id/nav_manage"
@@ -36,7 +37,8 @@
     </item>
 
     <item
-        android:title="Share">
+        android:title="Share"
+        android:visible="false">
         <menu>
             <group android:checkableBehavior="single">
             <item
