@@ -1,9 +1,13 @@
 package tamborachallenge.steelytoe.com;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -13,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import tamborachallenge.steelytoe.com.common.Impl.CrudTempDeliverySmsFailed;
@@ -31,6 +36,8 @@ import java.io.File;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final int REQUEST_PERMISSION_REQUEST_CODE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +73,14 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!checkPermission()) {
+            requestPermission();
+        }
     }
 
     @Override
@@ -174,5 +189,54 @@ public class MainActivity extends AppCompatActivity
 
         AlertDialog dialogInterface = builder.create();
         dialogInterface.show();
+    }
+
+    private boolean checkPermission() {
+        int locationPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        int cameraPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        int sendSmsPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS);
+        int readSmsPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_SMS);
+        int receiveSmsPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS);
+        int readPhoneStatePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
+
+
+        if (locationPermission == PackageManager.PERMISSION_GRANTED
+                && cameraPermission == PackageManager.PERMISSION_GRANTED
+                && sendSmsPermission == PackageManager.PERMISSION_GRANTED
+                && readSmsPermission == PackageManager.PERMISSION_GRANTED
+                && receiveSmsPermission == PackageManager.PERMISSION_GRANTED
+                && readPhoneStatePermission == PackageManager.PERMISSION_GRANTED){
+            return true;
+        }
+        return false;
+
+    }
+
+    private void requestPermission() {
+        boolean shouldShowPermissionRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        final String[] permissions = new String[] {Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.CAMERA,
+                Manifest.permission.SEND_SMS,
+                Manifest.permission.READ_SMS,
+                Manifest.permission.RECEIVE_SMS,
+                Manifest.permission.READ_PHONE_STATE};
+
+        if (shouldShowPermissionRationale) {
+            Snackbar.make(findViewById(R.id.content_main), getString(R.string.permission_rationale),
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction("OKE", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ActivityCompat.requestPermissions(MainActivity.this, permissions,
+                                    REQUEST_PERMISSION_REQUEST_CODE);
+                        }
+                    })
+                    .show();
+
+        }else {
+            ActivityCompat.requestPermissions(MainActivity.this, permissions,
+                    REQUEST_PERMISSION_REQUEST_CODE);
+        }
+
     }
 }

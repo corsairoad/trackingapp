@@ -1,5 +1,6 @@
 package tamborachallenge.steelytoe.com.ui.fragments.display;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -10,12 +11,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
@@ -32,6 +36,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.LocationServices;
 
+import tamborachallenge.steelytoe.com.MainActivity;
 import tamborachallenge.steelytoe.com.R;
 import tamborachallenge.steelytoe.com.common.NetworkUtil;
 import tamborachallenge.steelytoe.com.common.events.RunningLocationService;
@@ -56,6 +61,8 @@ public class GpsDetailViewFragment extends Fragment {
     private String timerString;
     private BroadcastReceiver timerReceiver;
     private TextView textTimer;
+
+    private static final int REQUEST_PERMISSION_REQUEST_CODE = 2;
 
 
     public static GpsDetailViewFragment newInstance(){
@@ -106,7 +113,11 @@ public class GpsDetailViewFragment extends Fragment {
         btnActionProcess.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadService();
+                if (!checkPermission()){
+                    requestPermission();
+                }else {
+                    loadService();
+                }
                 //mGoogleApiClient.connect();
             }
         });
@@ -251,9 +262,82 @@ public class GpsDetailViewFragment extends Fragment {
 
 
 
+    private boolean checkPermission() {
+        int locationPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+        int cameraPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA);
+        int sendSmsPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.SEND_SMS);
+        int readSmsPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.READ_SMS);
+        int receiveSmsPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.RECEIVE_SMS);
+        int readPhoneStatePermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.READ_PHONE_STATE);
 
 
+        if (locationPermission == PackageManager.PERMISSION_GRANTED
+                && cameraPermission == PackageManager.PERMISSION_GRANTED
+                && sendSmsPermission == PackageManager.PERMISSION_GRANTED
+                && readSmsPermission == PackageManager.PERMISSION_GRANTED
+                && receiveSmsPermission == PackageManager.PERMISSION_GRANTED
+                && readPhoneStatePermission == PackageManager.PERMISSION_GRANTED){
+            return true;
+        }
+        return false;
 
+    }
 
+    private void requestPermission() {
+        boolean shouldShowPermissionRationale = ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
+        final String[] permissions = new String[] {Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.CAMERA,
+                Manifest.permission.SEND_SMS,
+                Manifest.permission.READ_SMS,
+                Manifest.permission.RECEIVE_SMS,
+                Manifest.permission.READ_PHONE_STATE};
 
+        if (shouldShowPermissionRationale) {
+            Snackbar.make(getActivity().findViewById(R.id.content_main), getString(R.string.permission_rationale),
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction("OKE", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ActivityCompat.requestPermissions(getActivity(), permissions,
+                                    REQUEST_PERMISSION_REQUEST_CODE);
+                        }
+                    })
+                    .show();
+
+        }else {
+            ActivityCompat.requestPermissions(getActivity(), permissions,
+                    REQUEST_PERMISSION_REQUEST_CODE);
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        int grantedResult = 0;
+        switch (requestCode) {
+            case REQUEST_PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0) {
+                    int grantSize = grantResults.length;
+                    for (int i=0; i<grantSize; i++) {
+                        if (grantResults[i]== PackageManager.PERMISSION_GRANTED) {
+                            grantedResult+=1;
+                        }
+                    }
+
+                    if (grantedResult == grantSize) {
+                        loadService();
+                    }else {
+                        Snackbar.make(getActivity().findViewById(R.id.content_main), getString(R.string.permission_rationale),
+                                Snackbar.LENGTH_INDEFINITE)
+                                .setAction("OKE", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        requestPermission();
+                                    }
+                                })
+                                .show();                    }
+                }
+
+        }
+    }
 }
