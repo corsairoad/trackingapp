@@ -173,9 +173,7 @@ public class MainActivity extends AppCompatActivity
                 //delete file gpx
                 File myDir = new File(getFilesDir().getAbsolutePath());
                 File file = new File(myDir, "log.gpx");
-                boolean deleted = file.delete();
 
-                Toast.makeText(getBaseContext(), "Location Record Deleted ALL " + "File GPX Delete " + deleted, Toast.LENGTH_SHORT);
                 dialogInterface.dismiss();
             }
         });
@@ -200,15 +198,12 @@ public class MainActivity extends AppCompatActivity
         int readPhoneStatePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
 
 
-        if (locationPermission == PackageManager.PERMISSION_GRANTED
+        return locationPermission == PackageManager.PERMISSION_GRANTED
                 && cameraPermission == PackageManager.PERMISSION_GRANTED
                 && sendSmsPermission == PackageManager.PERMISSION_GRANTED
                 && readSmsPermission == PackageManager.PERMISSION_GRANTED
                 && receiveSmsPermission == PackageManager.PERMISSION_GRANTED
-                && readPhoneStatePermission == PackageManager.PERMISSION_GRANTED){
-            return true;
-        }
-        return false;
+                && readPhoneStatePermission == PackageManager.PERMISSION_GRANTED;
 
     }
 

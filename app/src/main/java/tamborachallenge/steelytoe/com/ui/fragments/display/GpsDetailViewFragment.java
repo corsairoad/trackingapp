@@ -2,18 +2,19 @@ package tamborachallenge.steelytoe.com.ui.fragments.display;
 
 import android.Manifest;
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Parcelable;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -31,23 +32,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dd.processbutton.iml.ActionProcessButton;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.ActivityRecognition;
-import com.google.android.gms.location.LocationServices;
 
-import tamborachallenge.steelytoe.com.MainActivity;
 import tamborachallenge.steelytoe.com.R;
-import tamborachallenge.steelytoe.com.common.NetworkUtil;
-import tamborachallenge.steelytoe.com.common.events.RunningLocationService;
+import tamborachallenge.steelytoe.com.common.events.RecognitionService;
 import tamborachallenge.steelytoe.com.common.events.ServiceBackground;
-import tamborachallenge.steelytoe.com.common.events.ServiceSendSms;
-import tamborachallenge.steelytoe.com.common.events.ServiceSmsFailed;
 import tamborachallenge.steelytoe.com.ui.activity.ViewTrackActivity;
 import tamborachallenge.steelytoe.com.util.PrefManager;
 
 
-public class GpsDetailViewFragment extends Fragment {
+public class GpsDetailViewFragment extends Fragment{
+
+    private static final String TAG = GpsDetailViewFragment.class.getSimpleName();
+
     private View rootView;
     private ActionProcessButton btnActionProcess , btnActionView;
     private PendingIntent pendingIntentLocation, pendingIntentSms;
@@ -73,7 +70,7 @@ public class GpsDetailViewFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefManager = PrefManager.getInstance(getContext());
-        createAndRegisterReceiver();
+
     }
 
     private void initTimer() {
@@ -88,18 +85,26 @@ public class GpsDetailViewFragment extends Fragment {
     private void createAndRegisterReceiver(){
         IntentFilter filter = new IntentFilter();
         filter.addAction(ServiceBackground.ACTION_TIMER_RECIVER);
+        filter.addAction(ServiceBackground.ACTION_BIND_SERVICE);
 
         timerReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (ServiceBackground.ACTION_TIMER_RECIVER.equals(intent.getAction())){
-                    initTimer();
+                switch (intent.getAction()) {
+                    case ServiceBackground.ACTION_TIMER_RECIVER:
+                        initTimer();
+                        break;
+                    case ServiceBackground.ACTION_BIND_SERVICE:
+                        //int flag = intent.getIntExtra(ServiceBackground.EXTRA_BIND_SERVICE, -1);
+                        //doSomeThingWithLocationService(flag);
+                        break;
                 }
             }
         };
 
         getActivity().registerReceiver(timerReceiver, filter);
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -115,8 +120,8 @@ public class GpsDetailViewFragment extends Fragment {
             public void onClick(View v) {
                 if (!checkPermission()){
                     requestPermission();
-                }else {
-                    loadService();
+                } else {
+                    loadService(); // location service
                 }
                 //mGoogleApiClient.connect();
             }
@@ -135,6 +140,7 @@ public class GpsDetailViewFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        createAndRegisterReceiver();
         initTimer();
     }
 
@@ -146,6 +152,12 @@ public class GpsDetailViewFragment extends Fragment {
             setActionButtonStop__();
         }
         super.onResume();
+    }
+
+    @Override
+    public void onStop() {
+        getActivity().unregisterReceiver(timerReceiver);
+        super.onStop();
     }
 
     @Override
@@ -168,8 +180,12 @@ public class GpsDetailViewFragment extends Fragment {
     public void loadService(){
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        Intent service = new Intent(getContext(), ServiceBackground.class);
+        Intent recSercvice = new Intent(getContext(), RecognitionService.class);
+
         if(checkGps() == 0 ) {
-            Toast.makeText( getActivity(), "Gps Disable", Toast.LENGTH_SHORT).show();
+            Toast.makeText( getActivity(), "Gps Disabled", Toast.LENGTH_SHORT).show();
         } else {
             if (checkSession() == 1) {
                 // Proses Stop
@@ -177,12 +193,10 @@ public class GpsDetailViewFragment extends Fragment {
                 editor.commit();
                 setActionButtonStart__();
 
-                Intent service = new Intent(getActivity(), ServiceBackground.class);
                 getActivity().stopService(service);
-
+                getActivity().stopService(recSercvice);
                 //Intent serviceSmsSend = new Intent(getActivity(), ServiceSendSms.class);
                 //getActivity().stopService(serviceSmsSend);
-
 
             } else if (checkSession() == 0) {
                 // Proses Start
@@ -190,11 +204,8 @@ public class GpsDetailViewFragment extends Fragment {
                 editor.commit();
                 setActionButtonStop__();
 
-                Intent service = new Intent(getActivity(), ServiceBackground.class);
                 getActivity().startService(service);
-
-                //Intent serviceSmsSend = new Intent(getActivity(), ServiceSendSms.class);
-                //getActivity().startService(serviceSmsSend);
+                getActivity().startService(recSercvice);
 
             }
         }
@@ -258,9 +269,6 @@ public class GpsDetailViewFragment extends Fragment {
 
         managerLocation.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntentLocation);
     }
-
-
-
 
     private boolean checkPermission() {
         int locationPermission = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
@@ -340,4 +348,6 @@ public class GpsDetailViewFragment extends Fragment {
 
         }
     }
+
+
 }

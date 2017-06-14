@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -57,9 +58,6 @@ import java.util.List;
 public class ServiceBackground extends Service implements GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks, com.google.android.gms.location.LocationListener {
 
-//// ***************************************************************************************************************/
-//// ****************************************** LOGIKA PENCARIAN TITIK LOCATION 1 **********************************/
-//// ***************************************************************************************************************/
     private static final String TAG = ServiceBackground.class.getSimpleName();
 
     public static final String BROADCAST_ACTION = "Hello World";
@@ -70,11 +68,15 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
 
     private PendingIntent pendingIntent;
     private AlarmManager manager;
+    private static final int TIME_DIFFERENCE_THRESHOLD = 1 * 60 * 1000;
 
     Context context;
     Intent intent;
 
     //-- start
+    public static final String ACTION_TIMER_RECIVER = "timer.receiver";
+    public static final String ACTION_BIND_SERVICE = "com.bind.service";
+    public static final String EXTRA_BIND_SERVICE = "com.extra.bind.service";
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -92,8 +94,8 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
     private int hour = 0;
     private String timerString;
 
-    public static final String ACTION_TIMER_RECIVER = "timer.receiver";
-
+    private NotificationCompat.Builder notifBuilder;
+    private final IBinder mBinder = new LocalBinder();
     // -- end
 
     private boolean addNewTrackSegment;
@@ -104,14 +106,9 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
     public void onCreate() {
         super.onCreate();
         intent = new Intent(BROADCAST_ACTION);
-        context=this;
+        context = this;
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addOnConnectionFailedListener(this)
-                .addConnectionCallbacks(this)
-                .addApi(LocationServices.API)
-                .addApi(ActivityRecognition.API)
-                .build();
+        initGoogleApiClient();
 
 
         timerHandler = new Handler();
@@ -120,14 +117,14 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
             public void run() {
                 if (second == 59) {
                     second = 0;
-                    minute +=1;
-                }else {
-                    second+=1;
+                    minute += 1;
+                } else {
+                    second += 1;
                 }
 
-                if (minute  == 60 ) {
+                if (minute == 60) {
                     minute = 0;
-                    hour+=1;
+                    hour += 1;
                 }
 
                 timerString = String.format("%02d:%02d:%02d", hour, minute, second);
@@ -138,6 +135,21 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
         };
 
 
+    }
+
+    private void initGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addOnConnectionFailedListener(this)
+                .addConnectionCallbacks(this)
+                .addApi(LocationServices.API)
+                .addApi(ActivityRecognition.API)
+                .build();
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
     }
 
     private void updateTimerReceiver(int hour, int minute, int second) {
@@ -153,14 +165,20 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("ServiceBackground", "onStartCommand() called");
+
         mInterval = getInterval();
         //mInterval = 1000 * 60 * 2;
         if (mGoogleApiClient != null && !mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
-        Log.d("ServiceBackground", "onStartCommand() called");
+
+        createLocationRequest();
+
         timerHandler.postDelayed(timerRunnable, timerInterval);
+
         return START_STICKY;
+
     }
 
 
@@ -202,11 +220,11 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
         mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        Intent intent = new Intent(this, ServiceBackground.class);
-        PendingIntent pendingIntent = PendingIntent.getService(this, 65,intent,0);
-        //ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, getInterval(),pendingIntent);
-        createLocationRequest();
         startLocationRequest();
     }
 
@@ -223,7 +241,10 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
     }
 
     private void startLocationRequest() {
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest, this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
 
     // location update listener
@@ -237,7 +258,11 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
     private void updateTimerNotification(String timerString) {
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE_MAIN, intent, 0);
-        NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(this)
+        if (notifBuilder == null){
+           notifBuilder = new NotificationCompat.Builder(this);
+
+        }
+        notifBuilder
                 .setContentTitle("Durasi")
                 .setContentText(timerString)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
@@ -276,7 +301,7 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
         if(TextUtils.isEmpty(intervalString)){
             editor.putString("time_before_logging", "15");
             editor.apply();
-            interval = 15 * 1000;
+            interval = 1 * 10 * 1000;
         }else{
             interval = Long.parseLong(intervalString) * 1000;
         }
@@ -289,7 +314,7 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
         if (loc == null) {
             return;
         }
-            if(isBetterLocation(loc, previousBestLocation)) {
+            if(isLocationOke(previousBestLocation, loc)) {
                 Log.d("__A", " " + loc);
                 Log.d("__B", " " + previousBestLocation);
 
@@ -350,15 +375,16 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
 
     }
 
+    /*
+    / Location filter algorithms
+    /
+     */
+
     protected boolean isBetterLocation(Location location, Location currentBestLocation) {
         if (currentBestLocation == null) {
-            // A new location is always better than no location
-            // Lokasi baru selalu lebih baik daripada tidak ada lokasi
             return true;
         }
 
-        // Check whether the new location fix is newer or older
-        // Periksa apakah lokasi baru fix lebih baru atau lebih tua
         long timeDelta = location.getTime() - currentBestLocation.getTime();
         boolean isSignificantlyNewer = timeDelta > INTERVAL;
         boolean isSignificantlyOlder = timeDelta < -INTERVAL;
@@ -390,6 +416,34 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
         return false;
     }
 
+    private boolean isLocationOke(Location oldLocation, Location newLocation) {
+        if(oldLocation == null) {
+            return true;
+        }
+
+        // Check if new location is newer in time.
+        boolean isNewer = newLocation.getTime() > oldLocation.getTime();
+
+        // Check if new location more accurate. Accuracy is radius in meters, so less is better.
+        boolean isMoreAccurate = newLocation.getAccuracy() < oldLocation.getAccuracy();
+        if(isMoreAccurate && isNewer) {
+            // More accurate and newer is always better.
+            return true;
+        } else if(isMoreAccurate && !isNewer) {
+            // More accurate but not newer can lead to bad fix because of user movement.
+            // Let us set a threshold for the maximum tolerance of time difference.
+            long timeDifference = newLocation.getTime() - oldLocation.getTime();
+
+            // If time difference is not greater then allowed threshold we accept it.
+            if(timeDifference > -TIME_DIFFERENCE_THRESHOLD) {
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
     private boolean isLocationApproved(Location currentLocation, Location previousLocation){
         if (previousLocation == null) {
             return false;
@@ -410,6 +464,8 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
         }
         return false;
     }
+
+    // ---- End location filter
 
     public void generateNoteOnSD(Context context, String sFileName, String sBody) {
         try {
@@ -446,12 +502,6 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
         return provider1.equals(provider2);
     }
 
-
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
 
     @Override
     public void onDestroy() {
@@ -677,35 +727,27 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
         return track.toString();
     }
 
+    public class LocalBinder extends Binder {
 
-    //======================================================================================================== Alarm
-    public void startAlarm() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        String intervalString =  sharedPreferences.getString("time_before_sms", null); // getting String
-        int interval;
-        if(intervalString == null || intervalString == ""){
-            editor.putString("time_before_sms", "5");
-            editor.commit();
-            interval = 5 * 60 * 1000;
-        }else{
-            interval = Integer.parseInt(intervalString) * 60 * 1000;
-        }
-
-        Intent alarmIntent = new Intent(this, ServiceSendSms.class);
-        pendingIntent = PendingIntent.getBroadcast(this, 77, alarmIntent, 0);
-
-        manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        manager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntent);
-    }
-
-    public void cancelAlarm() {
-        if (manager != null) {
-            manager.cancel(pendingIntent);
-            Toast.makeText(this, "Alarm Canceled", Toast.LENGTH_SHORT).show();
+        public ServiceBackground getService() {
+            return ServiceBackground.this;
         }
     }
 
+    public void stopLocationService() {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+            Log.d(TAG, "GOOGLE LOCATION SERVICE DISCONNECTED");
+        }
+    }
+
+    public void startLocationService() {
+        if (mGoogleApiClient == null) {
+            initGoogleApiClient();
+        }
+        mGoogleApiClient.connect();
+        Log.d(TAG, "RESTART GOOGLE LOCATION SERVICE");
+    }
 
 
 }

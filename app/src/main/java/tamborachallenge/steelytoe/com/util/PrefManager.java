@@ -18,6 +18,7 @@ public class PrefManager {
     public static final String KEY_HOUR = "hour";
     public static final String KEY_MINUTE = "minute";
     public static final String KEY_SECOND= "second";
+    public static final String KEY_STILL = "still";
 
     public static final String PREF_NAME = PrefManager.class.getSimpleName();
 
@@ -66,4 +67,15 @@ public class PrefManager {
         saveMinute(0);
         saveSecond(0);
     }
+
+    public int getStillFlagActivity() {
+        return preferences.getInt(KEY_STILL, 0);
+    }
+
+    public void addStillFlagActivity(int count) {
+        editor.putInt(KEY_STILL, count);
+        editor.commit();
+    }
+
+
 }

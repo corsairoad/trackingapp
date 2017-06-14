@@ -62,6 +62,12 @@
         <service android:name=".common.events.ServiceSendSms" />
         <service android:name=".common.events.ServiceSmsFailed" />
         <service android:name=".common.events.RunningLocationService" android:exported="false"/>
+        <service android:name=".common.events.RecognitionService" android:exported="false"/>
+        <service android:name=".common.events.RecognitionReciverService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.receiver.recognition"/>
+            </intent-filter>
+        </service>
         <!-- <receiver android:name=".senders.sms.AlarmSmsReceiver" /> -->
 
         <activity
