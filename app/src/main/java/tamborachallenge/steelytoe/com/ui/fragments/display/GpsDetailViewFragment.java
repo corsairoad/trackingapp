@@ -24,17 +24,23 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dd.processbutton.iml.ActionProcessButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import tamborachallenge.steelytoe.com.R;
+import tamborachallenge.steelytoe.com.common.events.RecognitionReciverService;
 import tamborachallenge.steelytoe.com.common.events.RecognitionService;
 import tamborachallenge.steelytoe.com.common.events.ServiceBackground;
 import tamborachallenge.steelytoe.com.ui.activity.ViewTrackActivity;
@@ -58,6 +64,11 @@ public class GpsDetailViewFragment extends Fragment{
     private String timerString;
     private BroadcastReceiver timerReceiver;
     private TextView textTimer;
+    private TextView textSpeed;
+    private TextView textDistance;
+    private TextView textActivity;
+    private TextView textStartedTime;
+    private LinearLayout containerStartedTime;
 
     private static final int REQUEST_PERMISSION_REQUEST_CODE = 2;
 
@@ -70,51 +81,24 @@ public class GpsDetailViewFragment extends Fragment{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefManager = PrefManager.getInstance(getContext());
-
     }
-
-    private void initTimer() {
-        hour = prefManager.getHour();
-        minute = prefManager.getMinute();
-        second = prefManager.getSecond();
-
-        timerString = String.format("%2d:%02d:%02d", hour, minute, second);
-        textTimer.setText(timerString);
-    }
-
-    private void createAndRegisterReceiver(){
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ServiceBackground.ACTION_TIMER_RECIVER);
-        filter.addAction(ServiceBackground.ACTION_BIND_SERVICE);
-
-        timerReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                switch (intent.getAction()) {
-                    case ServiceBackground.ACTION_TIMER_RECIVER:
-                        initTimer();
-                        break;
-                    case ServiceBackground.ACTION_BIND_SERVICE:
-                        //int flag = intent.getIntExtra(ServiceBackground.EXTRA_BIND_SERVICE, -1);
-                        //doSomeThingWithLocationService(flag);
-                        break;
-                }
-            }
-        };
-
-        getActivity().registerReceiver(timerReceiver, filter);
-    }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_gps_detail_view, container, false);
 
+        textSpeed = (TextView) rootView.findViewById(R.id.text_speed);
+        textDistance = (TextView) rootView.findViewById(R.id.text_distance);
         btnActionProcess = (ActionProcessButton) rootView.findViewById(R.id.btnActionProcess);
+        textActivity = (TextView) rootView.findViewById(R.id.text_activity);
         btnActionView = (ActionProcessButton) rootView.findViewById(R.id.btnActionView);
         textTimer = (TextView) rootView.findViewById(R.id.text_timer);
         textTimer.setText(timerString);
+        textStartedTime = (TextView) rootView.findViewById(R.id.text_started_time);
+        containerStartedTime = (LinearLayout) rootView.findViewById(R.id.container_started_time);
+        containerStartedTime.setVisibility(View.GONE);
+
         btnActionProcess.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -142,6 +126,7 @@ public class GpsDetailViewFragment extends Fragment{
         super.onStart();
         createAndRegisterReceiver();
         initTimer();
+        setStartedTime();
     }
 
     @Override
@@ -184,6 +169,8 @@ public class GpsDetailViewFragment extends Fragment{
         Intent service = new Intent(getContext(), ServiceBackground.class);
         Intent recSercvice = new Intent(getContext(), RecognitionService.class);
 
+        PrefManager prefManager = PrefManager.getInstance(getContext());
+
         if(checkGps() == 0 ) {
             Toast.makeText( getActivity(), "Gps Disabled", Toast.LENGTH_SHORT).show();
         } else {
@@ -195,8 +182,10 @@ public class GpsDetailViewFragment extends Fragment{
 
                 getActivity().stopService(service);
                 getActivity().stopService(recSercvice);
-                //Intent serviceSmsSend = new Intent(getActivity(), ServiceSendSms.class);
-                //getActivity().stopService(serviceSmsSend);
+
+                prefManager.setLastDistance(0); // reset last distance
+                prefManager.addStillFlagActivity(0);
+                prefManager.setStartedTime(null); // reset started time when user pressed stop running button
 
             } else if (checkSession() == 0) {
                 // Proses Start
@@ -206,9 +195,27 @@ public class GpsDetailViewFragment extends Fragment{
 
                 getActivity().startService(service);
                 getActivity().startService(recSercvice);
+                setStartedTime();
 
             }
         }
+    }
+
+    private void setStartedTime() {
+        String time = prefManager.getStartedTime();
+
+        if (time == null) {
+            if (checkSession() == 0) {
+                containerStartedTime.setVisibility(View.GONE);
+                return;
+            }
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+            time = sdf.format(new Date());
+            prefManager.setStartedTime(time);
+        }
+
+        textStartedTime.setText(time);
+        containerStartedTime.setVisibility(View.VISIBLE);
     }
 
     // Button
@@ -347,6 +354,58 @@ public class GpsDetailViewFragment extends Fragment{
                 }
 
         }
+    }
+
+    private void setActMovement(String act) {
+        textActivity.setText(act);
+    }
+
+    private void setSpeedAndDistance(String speed, String distance) {
+        textSpeed.setText(speed);
+        textDistance.setText(distance);
+    }
+
+
+    private void initTimer() {
+        hour = prefManager.getHour();
+        minute = prefManager.getMinute();
+        second = prefManager.getSecond();
+
+        timerString = String.format("%2d:%02d:%02d", hour, minute, second);
+        textTimer.setText(timerString);
+    }
+
+    private void createAndRegisterReceiver(){
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ServiceBackground.ACTION_TIMER_RECIVER);
+        filter.addAction(ServiceBackground.ACTION_BIND_SERVICE);
+        filter.addAction(ServiceBackground.ACTION_SPEED_DISTANCE_RECEIVER);
+        filter.addAction(RecognitionReciverService.ACTION_ACTIVITY_MOVEMENT);
+
+        timerReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                switch (intent.getAction()) {
+                    case ServiceBackground.ACTION_TIMER_RECIVER:
+                        initTimer();
+                        break;
+                    case ServiceBackground.ACTION_BIND_SERVICE:
+                        //int flag = intent.getIntExtra(ServiceBackground.EXTRA_BIND_SERVICE, -1);
+                        //doSomeThingWithLocationService(flag);
+                        break;
+                    case ServiceBackground.ACTION_SPEED_DISTANCE_RECEIVER:
+                        String speed = intent.getStringExtra(ServiceBackground.EXTRA_SPEED);
+                        String distance = intent.getStringExtra(ServiceBackground.EXTRA_DISTANCE);
+                        setSpeedAndDistance(speed, distance);
+                        break;
+                    case RecognitionReciverService.ACTION_ACTIVITY_MOVEMENT:
+                        String act = intent.getStringExtra(RecognitionReciverService.EXTRA_ACTIVITY_MOVEMENT);
+                        setActMovement(act);
+                }
+            }
+        };
+
+        getActivity().registerReceiver(timerReceiver, filter);
     }
 
 

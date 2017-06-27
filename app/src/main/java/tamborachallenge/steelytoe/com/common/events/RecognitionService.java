@@ -69,10 +69,10 @@ public class RecognitionService extends Service implements
             return;
         }
         switch (flag) {
-            case 0:
+            case RecognitionReciverService.FLAG_STOP_LOCATION_SERVICE:
                 serviceBackground.stopLocationService();
                 break;
-            case 1:
+            case RecognitionReciverService.FLAG_START_LOCATION_SERVICE:
                 serviceBackground.startLocationService();
                 break;
         }

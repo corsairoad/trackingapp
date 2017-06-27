@@ -19,6 +19,8 @@ public class PrefManager {
     public static final String KEY_MINUTE = "minute";
     public static final String KEY_SECOND= "second";
     public static final String KEY_STILL = "still";
+    public static final String KEY_STARTED_TIME = "started_time";
+    public static final String KEY_LAST_DISTANCE = "last_distance";
 
     public static final String PREF_NAME = PrefManager.class.getSimpleName();
 
@@ -74,6 +76,24 @@ public class PrefManager {
 
     public void addStillFlagActivity(int count) {
         editor.putInt(KEY_STILL, count);
+        editor.commit();
+    }
+
+    public void setStartedTime(String startedTime) {
+        editor.putString(KEY_STARTED_TIME, startedTime);
+        editor.commit();
+    }
+
+    public String getStartedTime() {
+        return preferences.getString(KEY_STARTED_TIME, null);
+    }
+
+    public float getLastDistance() {
+        return preferences.getFloat(KEY_LAST_DISTANCE, 0);
+    }
+
+    public void setLastDistance(float lastDistance) {
+        editor.putFloat(KEY_LAST_DISTANCE, lastDistance);
         editor.commit();
     }
 

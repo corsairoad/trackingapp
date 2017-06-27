@@ -24,7 +24,17 @@ public class RecognitionReciverService extends IntentService {
     private Intent intent;
 
     public static final String EXTRA_LOCATION_SERVICE = "com.start.stop.receiver";
-    public static final String ACTION_RECOGNITION_FILTER_RECEIVER = "com.fadly.reciver.recognition";
+    public static final String ACTION_RECOGNITION_FILTER_RECEIVER = "com.reciver.recognition";
+    public static final String ACTION_ACTIVITY_MOVEMENT = "com.receiver.activity.movement";
+    public static final String EXTRA_ACTIVITY_MOVEMENT = "com.receiver.extra.movement";
+    public static final int FLAG_STOP_LOCATION_SERVICE = 0;
+    public static final int FLAG_START_LOCATION_SERVICE = 1;
+
+    private static final String ACTIVITY_STILL = "STILL";
+    private static final String ACTIVITY_WALKING = "WALKING";
+    private static final String ACTIVITY_RUNNING = "RUNNING";
+
+
     private PrefManager prefManager;
 
     public RecognitionReciverService() {
@@ -61,11 +71,21 @@ public class RecognitionReciverService extends IntentService {
         switch (type) {
             case DetectedActivity.STILL:
                     case DetectedActivity.UNKNOWN:
+                        sendActivityMovementBroadcast(ACTIVITY_STILL);
                         stopLocationService(confidence);
                         break;
-                    default:
-                        restartLocationService();
-                        break;
+                    case DetectedActivity.IN_VEHICLE:
+                        case DetectedActivity.ON_BICYCLE:
+                            case DetectedActivity.ON_FOOT:
+                                case DetectedActivity.TILTING:
+                                    case DetectedActivity.RUNNING:
+                                        sendActivityMovementBroadcast(ACTIVITY_RUNNING);
+                                        restartLocationService();
+                                        break;
+                                    case DetectedActivity.WALKING:
+                                        sendActivityMovementBroadcast(ACTIVITY_WALKING);
+                                        restartLocationService();
+                                        break;
         }
     }
 
@@ -76,8 +96,10 @@ public class RecognitionReciverService extends IntentService {
     private void stopLocationService(int confidence) {
         if (confidence >=70){
             int totalStillCount = prefManager.getStillFlagActivity();
-            if (totalStillCount >= 3) {
-                sendBroadCast(0);
+            Log.d(TAG, "TOTAL STILL COUNT: " + totalStillCount);
+            if (totalStillCount >= 2) {
+                sendActRecogBroadCast(FLAG_STOP_LOCATION_SERVICE);
+                prefManager.addStillFlagActivity(0);
             }else {
                 prefManager.addStillFlagActivity(totalStillCount + 1);
             }
@@ -86,7 +108,7 @@ public class RecognitionReciverService extends IntentService {
 
     private void restartLocationService() {
         prefManager.addStillFlagActivity(0);
-        sendBroadCast(1);
+        sendActRecogBroadCast(FLAG_START_LOCATION_SERVICE);
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -99,10 +121,16 @@ public class RecognitionReciverService extends IntentService {
         return false;
     }
 
-    private void sendBroadCast(int flag) {
+    private void sendActRecogBroadCast(int flag) {
         Intent intent = new Intent();
         intent.setAction(ACTION_RECOGNITION_FILTER_RECEIVER);
         intent.putExtra(EXTRA_LOCATION_SERVICE, flag);
+        sendBroadcast(intent); // RECEIVER IS IN THE RecognitionService.class
+    }
+
+    private void sendActivityMovementBroadcast(String movement) {
+        Intent intent = new Intent(ACTION_ACTIVITY_MOVEMENT);
+        intent.putExtra(EXTRA_ACTIVITY_MOVEMENT, movement);
         sendBroadcast(intent);
     }
 

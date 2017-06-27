@@ -103,5 +103,13 @@
 
     <string name="duration_text">Duration</string>
     <string name="permission_rationale">Location permission is needed for core functionality</string>
+    <string name="speed">Speed</string>
+    <string name="text_kilometer">km/h</string>
+    <string name="text_speed">0.00</string>
+    <string name="distance">Distance</string>
+    <string name="text_distance">km</string>
+    <string name="activity_recognition">Activity</string>
+    <string name="text_activity">-</string>
+    <string name="started_at">Started at:</string>
 
 </resources>

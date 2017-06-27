@@ -17,7 +17,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -30,30 +29,25 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
-import com.google.android.gms.location.ActivityRecognitionApi;
-import com.google.android.gms.location.ActivityRecognitionResult;
-import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-
-import tamborachallenge.steelytoe.com.MainActivity;
-import tamborachallenge.steelytoe.com.R;
-import tamborachallenge.steelytoe.com.common.Maths;
-import tamborachallenge.steelytoe.com.common.Strings;
-import tamborachallenge.steelytoe.com.model.TempLoaction;
-import tamborachallenge.steelytoe.com.common.Impl.CrudTempLocationImpl;
-import tamborachallenge.steelytoe.com.loggers.FileLoggerFactory;
-import tamborachallenge.steelytoe.com.util.PrefManager;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.DecimalFormat;
+
+import tamborachallenge.steelytoe.com.MainActivity;
+import tamborachallenge.steelytoe.com.R;
+import tamborachallenge.steelytoe.com.common.Impl.CrudTempLocationImpl;
+import tamborachallenge.steelytoe.com.common.Maths;
+import tamborachallenge.steelytoe.com.common.Strings;
+import tamborachallenge.steelytoe.com.loggers.FileLoggerFactory;
+import tamborachallenge.steelytoe.com.model.TempLoaction;
+import tamborachallenge.steelytoe.com.util.PrefManager;
 
 public class ServiceBackground extends Service implements GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks, com.google.android.gms.location.LocationListener {
@@ -76,11 +70,14 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
     //-- start
     public static final String ACTION_TIMER_RECIVER = "timer.receiver";
     public static final String ACTION_BIND_SERVICE = "com.bind.service";
-    public static final String EXTRA_BIND_SERVICE = "com.extra.bind.service";
+    public static final String ACTION_SPEED_DISTANCE_RECEIVER = "com.speed.distance";
+    public static final String EXTRA_SPEED = "com.extra.speed";
+    public static final String EXTRA_DISTANCE = "com.extra.distance";
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
+    private Location firstLocation;
     private long mInterval;
     private static final int NOTIFICATION_ONGOING_ID = 32;
     public static final int REQUEST_CODE_MAIN = 76;
@@ -315,13 +312,16 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
             return;
         }
             if(isLocationOke(previousBestLocation, loc)) {
-                Log.d("__A", " " + loc);
-                Log.d("__B", " " + previousBestLocation);
+                Log.d("Current Location", " " + loc);
+                Log.d("Previous Location", " " + previousBestLocation);
 
                 intent.putExtra("Latitude", loc.getLatitude());
                 intent.putExtra("Longitude", loc.getLongitude());
                 intent.putExtra("Provider", loc.getProvider());
+
                 sendBroadcast(intent);
+
+                sendSpeedAndDistanceBroadcast(loc);
 
                 Time now = new Time();
                 now.setToNow();
@@ -333,6 +333,26 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
             }
             previousBestLocation = loc;
     }
+
+    private void sendSpeedAndDistanceBroadcast(Location currentLocation) {
+        DecimalFormat decimalFormat = new DecimalFormat("####.##");
+        PrefManager prefManager = PrefManager.getInstance(this);
+
+        float newDistance = (float) ((previousBestLocation.distanceTo(currentLocation)) * 0.001);
+        float lastDistance = prefManager.getLastDistance();
+        float totalDistance = lastDistance + newDistance;
+        prefManager.setLastDistance(totalDistance);
+
+        String speed = decimalFormat.format((currentLocation.getSpeed()*3600)/1000);
+        String distance = decimalFormat.format(totalDistance);
+
+        Intent intent = new Intent(ACTION_SPEED_DISTANCE_RECEIVER);
+        intent.putExtra(EXTRA_SPEED, speed);
+        intent.putExtra(EXTRA_DISTANCE, distance);
+
+        sendBroadcast(intent);
+    }
+
 
     public class MyLocationListener implements LocationListener {
 
@@ -418,6 +438,12 @@ public class ServiceBackground extends Service implements GoogleApiClient.OnConn
 
     private boolean isLocationOke(Location oldLocation, Location newLocation) {
         if(oldLocation == null) {
+            /*
+            firstLocation = new Location("first_location");
+            firstLocation.setLatitude(newLocation.getLatitude());
+            firstLocation.setLongitude(newLocation.getLongitude());
+            */
+            previousBestLocation = newLocation;
             return true;
         }
 
