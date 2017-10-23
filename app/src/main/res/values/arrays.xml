@@ -12,4 +12,29 @@
         <item>Instagram</item>
         <item>Facebook</item>
     </string-array>
+
+    <string-array name="pref_accuracy_entries">
+        <item>High</item>
+        <item>Balanced</item>
+        <item>Low</item>
+    </string-array>
+
+    <string-array name="pref_accuracy_values">
+        <item>HIGH</item>
+        <item>BALANCED</item>
+        <item>LOW</item>
+    </string-array>
+
+    <string-array name="pref_location_data_entries">
+        <item>Data</item>
+        <item>Sms</item>
+        <item>Data and sms</item>
+    </string-array>
+
+    <string-array name="pref_location_data_values">
+        <item>data</item>
+        <item>sms</item>
+        <item>datasms</item>
+    </string-array>
+
 </resources>

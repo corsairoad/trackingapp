@@ -19,6 +19,7 @@
     <string name="txt_latitude">Latitude</string>
     <string name="txt_longitude">Latitude</string>
     <string name="loading">Loading ...</string>
+    <string name="google_maps_key">AIzaSyDKit1DpiprVfKw4fJOAFgej8FtX0CA6M</string>
 
 
     <!--OpenGTS STRING-->
@@ -111,5 +112,23 @@
     <string name="activity_recognition">Activity</string>
     <string name="text_activity">-</string>
     <string name="started_at">Started at:</string>
+    <string name="accuracy">Location accuracy</string>
+
+    <string name="pref_accuracy_default_value">HIGH</string>
+    <string name="send_data_via">Send location data via?</string>
+    <string name="pref_location_data_default_value">datasms</string>
+    <string name="pref_performance_category">Performance</string>
+    <string name="pref_user_email">user_email</string>
+    <string name="pref_title_user_email">Email</string>
+    <string name="pref_user_code">user_code</string>
+    <string name="pref_title_user_code">Code</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="history">History</string>
+    <string name="home">Home</string>
+    <string name="total">Total</string>
+    <string name="title_activity_history_maps">Running Log</string>
+
 
 </resources>

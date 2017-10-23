@@ -1,7 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+
+    <item android:id="@+id/home"
+        android:title="@string/home"
+        android:icon="@drawable/ic_home"/>
+
+    <item android:id="@+id/setting"
+        android:title="@string/action_settings"
+        android:icon="@drawable/ic_settings" />
+
+    <item android:id="@+id/history"
+        android:title="@string/history"
+        android:icon="@drawable/ic_date_range"
+        android:enabled="false"
+        android:visible="false"/>
+
+    <item
+        android:id="@+id/nav_manage"
+        android:icon="@drawable/ic_menu_manage"
+        android:title="GPX File"
+        android:visible="false"/>
+
+    <group android:checkableBehavior="single"
+        android:visible="false">
 
         <item
             android:id="@+id/nav_gallery"
@@ -15,23 +37,30 @@
 
     </group>
 
+
+
     <item
+        android:visible="false"
         android:title="Setting">
         <menu>
             <group android:checkableBehavior="single">
+
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Open GTS" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:visible="false"
-                android:title="SMS" />
-            <item
-                android:id="@+id/nav_manage"
+                android:id="@+id/nav_manage2"
                 android:icon="@drawable/ic_menu_manage"
-                android:title="GPX File" />
+                android:title="GPX File"
+                android:visible="false"/>
+
+                <item
+                    android:id="@+id/nav_share"
+                    android:icon="@drawable/ic_menu_share"
+                    android:title="Open GTS"
+                    android:visible="false"/>
+                <item
+                    android:id="@+id/nav_send"
+                    android:icon="@drawable/ic_menu_send"
+                    android:visible="false"
+                    android:title="SMS" />
             </group>
         </menu>
     </item>

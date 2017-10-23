@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="tamborachallenge.steelytoe.com">
+    package="intan.steelytoe.com">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -37,8 +37,7 @@
             android:configChanges="orientation"
             android:label="@string/title_activity_maps"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -49,23 +48,29 @@
             android:configChanges="orientation"
             android:label="@string/title_activity_maps"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-
+            android:theme="@style/AppTheme.NoActionBar"
+            android:icon="@drawable/ic_launcher_steelytoe">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
 
         <service android:name=".common.events.ServiceBackground" />
         <service android:name=".common.events.ServiceSendSms" />
         <service android:name=".common.events.ServiceSmsFailed" />
-        <service android:name=".common.events.RunningLocationService" android:exported="false"/>
-        <service android:name=".common.events.RecognitionService" android:exported="false"/>
-        <service android:name=".common.events.RecognitionReciverService" android:exported="false">
+        <service
+            android:name=".common.events.RunningLocationService"
+            android:exported="false" />
+        <service
+            android:name=".common.events.RecognitionService"
+            android:exported="false" />
+        <service
+            android:name=".common.events.RecognitionReciverService"
+            android:exported="false">
             <intent-filter>
-                <action android:name="com.receiver.recognition"/>
+                <action android:name="com.receiver.recognition" />
             </intent-filter>
         </service>
         <!-- <receiver android:name=".senders.sms.AlarmSmsReceiver" /> -->
@@ -75,60 +80,51 @@
             android:configChanges="orientation"
             android:label="@string/title_activity_main"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".ui.activity.SmsActivity"
             android:configChanges="orientation"
             android:label="SMS"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
-
-
         <activity
             android:name=".ui.fragments.settings.PerformanceSettingsFragment"
             android:configChanges="orientation"
             android:label="Performance"
             android:screenOrientation="portrait" />
-
-
         <activity
             android:name=".ui.activity.FileGpxActivity"
             android:configChanges="orientation"
             android:label="File GPX"
             android:screenOrientation="portrait" />
-
-
         <activity
             android:name=".ui.activity.SettingActivity"
             android:configChanges="orientation"
             android:label="Setting"
-            android:screenOrientation="portrait" />
-
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
         <activity
             android:name=".ui.fragments.settings.OpenGTSFragment"
             android:configChanges="orientation"
             android:label="Setting OpenGTS"
             android:screenOrientation="portrait" />
-
-
         <activity
             android:name=".ui.fragments.settings.SmsFragment"
             android:configChanges="orientation"
             android:label="Setting SMS"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".ui.activity.permission.PermissionSmsActivity"
             android:configChanges="orientation"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".ui.activity.permission.PermissionCameraActivity"
             android:configChanges="orientation"
             android:screenOrientation="portrait" />
-
         <activity
             android:name="info.vividcode.android.zxing.CaptureActivity"
             android:configChanges="orientation|keyboardHidden"
@@ -137,39 +133,40 @@
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
                 <action android:name="com.google.zxing.client.android.SCAN" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ui.activity.list.ListViewSmsSent"
             android:configChanges="orientation"
             android:label="Setting OpenGTS"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".ui.activity.list.ListViewLoc"
             android:configChanges="orientation"
             android:label="Setting OpenGTS"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".ui.activity.list.ListViewSmsFailed"
             android:configChanges="orientation"
             android:label="Setting OpenGTS"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".ui.activity.ViewTrackActivity"
             android:configChanges="orientation"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <!-- <activity android:name=".ui.activity.DownloadRuteActivity"></activity> -->
         <!-- <activity android:name=".ui.activity.permission.PermissionCameraActivity"></activity> -->
-        <activity android:name=".ui.activity.permission.InisialisasiActivity"></activity>
+        <activity android:name=".ui.activity.permission.InisialisasiActivity" />
+        <activity
+            android:name=".ui.activity.HistoryMapsActivity"
+            android:label="@string/title_activity_history_maps"></activity>
     </application>
 
 </manifest>
