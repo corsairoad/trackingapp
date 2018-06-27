@@ -56,7 +56,6 @@ public class OpenGTSManager{
 
     public void sendLocations(SerializableLocation[] locations, Context context){
         if (locations.length > 0) {
-
             /*String server__ = PreferenceHelper.getOpenGTSServer();
             MaterialEditTextPreference txtOpenGTSServer = (MaterialEditTextPreference) findPreference("opengts_server");
             Log.d("server_", "" + server__);

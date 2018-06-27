@@ -13,6 +13,8 @@ import java.util.List;
  */
 
 public class FileLoggerFactory {
+
+
     public static List<FileLogger> getFileLoggers(Context context) {
 
         List<FileLogger> loggers = new ArrayList<>();

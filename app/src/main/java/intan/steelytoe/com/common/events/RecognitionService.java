@@ -48,6 +48,7 @@ public class RecognitionService extends Service implements
                 handleFlag(flag);
             }
         };
+
         registerReceiver(mRecogReceiver, filter);
 
         bindLocationService(true);
@@ -68,6 +69,7 @@ public class RecognitionService extends Service implements
         if (!mBound) {
             return;
         }
+
         switch (flag) {
             case RecognitionReciverService.FLAG_STOP_LOCATION_SERVICE:
                 serviceBackground.stopLocationService();
@@ -122,8 +124,6 @@ public class RecognitionService extends Service implements
             unbindService(this);
         }
     }
-
-
 
     @Override
     public void onDestroy() {
